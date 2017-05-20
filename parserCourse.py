@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 from bs4 import BeautifulSoup
 from bs4 import element
 import re
@@ -22,9 +22,12 @@ def analyCourse(htmlPage):
     # only want <tr>
     tbodyContents = filter(lambda x: type(x) == element.Tag, tbodyContents)
     # print tbodyContents[0]
-    timeRule = ur"第\d+-\d+周\|\d节\/周|周[一-六日]第[,\d]+节{第[-\d]+周}"  # course time
+    # course time
+    timeRule = ur"第\d+-\d+周\|\d节\/周|周[一二三四五六日]第[,\d]+节{第[-\d]+周[\|单双周]*}"
+    # timeRule = ur"第\d+-\d+周\|\d节\/周|周[一-六日]第[,\d]+节{.*?}"  # course time
     # course name & teacher & classroom
-    nameAndRoomRule = ur"[\u4e00-\u9fa5]+\d*"
+    # nameAndRoomRule = ur">([\/\u4e00-\u9fa5]+\d*)<"
+    nameAndRoomRule = ur"[\u4e00-\u9fa5]+[\/\u4e00-\u9fa5]*\d*"
     digitRoomRule = ur">\d+"  # some classroom like 340303 is only digit ,use > to label
     # regular rule of course
     rule = timeRule + ur"|" + nameAndRoomRule + ur"|" + digitRoomRule
@@ -54,17 +57,28 @@ def analyCourse(htmlPage):
                 dayN += 1
                 continue
             resultList = coursePattern.findall(unicode(trContent[rowN]))
+            # print resultList
+            # exit(0)
             messN = 0  # message number N
-            for result in resultList:
+            result_len = len(resultList)
+            for ix in xrange(0, result_len):
+                result = resultList[ix]
                 messN += 1
                 if messN == 1:
-                    courseList.append([dayN,lessonIndex])
+                    courseList.append([dayN, lessonIndex])
                 if messN == ROOMINDEX:
                     # if it is a classroom with only digit
                     if re.findall(digitRoomRule, unicode(result)):
                         result = result[1:]  # remove ">"
                     # if it is a classroom with Chinese and digit
                     elif re.findall(ur"[\u4e00-\u9fa5]+\d+", unicode(result)):
+                        pass
+                    # only 4 element ,so it's classroom
+                    elif ix + 1 == result_len:
+                        pass
+                    # this element and next element is only chinese,
+                    # so it's classroom
+                    elif ix + 1 < result_len and re.findall(ur">[\u4e00-\u9fa5]+<", unicode(result)) and re.findall(ur">[\u4e00-\u9fa5]+<", unicode(result)):
                         pass
                     # the course don't have classroom
                     else:
@@ -74,17 +88,17 @@ def analyCourse(htmlPage):
                 if messN == ROOMINDEX:
                     messN = 0
             dayN += 1
-
     testPrint(courseList)
 
 
 def testPrint(courseList):
+    print 'day', 'N', '\t', 'course', '\t\t', 'time', '\t\t\t', 'teacher', '\t\t', 'classroom'
     for course in courseList:
-        if len(course) == 5:
-            print 'day:', course[0], 'lessonN:', course[1], course[2], course[3], course[4]
-        else:
-            print 'day:', course[0], 'lessonN:', course[1], course[2], course[3], course[4],  course[5]
+        for x in course:
+            print x, '\t',
+        print ' '
 
 if __name__ == '__main__':
-    htmlPage = open("./course.html")
+    # htmlPage = open("./course.html")
+    htmlPage = open("./course2.html")
     analyCourse(htmlPage)
