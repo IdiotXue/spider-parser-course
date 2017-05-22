@@ -21,10 +21,8 @@ def analyCourse(htmlPage):
     tbodyContents = tagTable.tbody.contents
     # only want <tr>
     tbodyContents = filter(lambda x: type(x) == element.Tag, tbodyContents)
-    # print tbodyContents[0]
     # course time
     timeRule = ur"第\d+-\d+周\|\d节\/周|周[一二三四五六日]第[,\d]+节{第[-\d]+周[\|单双周]*}"
-    # timeRule = ur"第\d+-\d+周\|\d节\/周|周[一-六日]第[,\d]+节{.*?}"  # course time
     # course name & teacher & classroom
     # nameAndRoomRule = ur">([\/\u4e00-\u9fa5]+\d*)<"
     nameAndRoomRule = ur"[\u4e00-\u9fa5]+[\/\u4e00-\u9fa5]*\d*"
